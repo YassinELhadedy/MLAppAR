@@ -22,9 +22,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.example.testarmlapplication.common.helpers.DisplayRotationHelper
 import com.example.testarmlapplication.common.samplerender.SampleRender
 import com.example.testarmlapplication.common.samplerender.arcore.BackgroundRenderer
-import com.example.testarmlapplication.ml.classification.DetectedObjectResult
-import com.example.testarmlapplication.ml.classification.MLKitObjectDetector
-import com.example.testarmlapplication.ml.classification.ObjectDetector
+import com.example.testarmlapplication.ml.classification.*
 import com.example.testarmlapplication.ml.classification.render.LabelRender
 import com.example.testarmlapplication.ml.classification.render.PointCloudRender
 import com.google.ar.core.Anchor
@@ -61,9 +59,9 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
   val arLabeledAnchors = Collections.synchronizedList(mutableListOf<ARLabeledAnchor>())
   var scanButtonWasPressed = false
 
-  val mlKitAnalyzer = MLKitObjectDetector(activity)
+  val mlKitAnalyzer = MLKitPoserDetector(activity)
 
-  var currentAnalyzer: ObjectDetector = mlKitAnalyzer
+  var currentAnalyzer: MLKitPoserDetector = mlKitAnalyzer
 
   override fun onResume(owner: LifecycleOwner) {
     displayRotationHelper.onResume()
@@ -112,7 +110,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     displayRotationHelper.onSurfaceChanged(width, height)
   }
 
-  var objectResults: List<DetectedObjectResult>? = null
+  var objectResults: List<PoseDetectorObjectResult>? = null
 
   override fun onDrawFrame(render: SampleRender) {
     val session = activity.arCoreSessionHelper.sessionCache ?: return
@@ -159,7 +157,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         launch(Dispatchers.IO) {
           val cameraId = session.cameraConfig.cameraId
           val imageRotation = displayRotationHelper.getCameraSensorToDisplayRotation(cameraId)
-          objectResults = currentAnalyzer.analyze(cameraImage, imageRotation)
+          objectResults = currentAnalyzer.analyze(cameraImage, imageRotation,activity.findViewById<GraphicOverlay>(R.id.graphic_overlay))
           cameraImage.close()
         }
       }
@@ -181,7 +179,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         view.resetButton.isEnabled = arLabeledAnchors.isNotEmpty()
         view.setScanningActive(false)
         when {
-          objects.isEmpty() && currentAnalyzer == mlKitAnalyzer && !mlKitAnalyzer.hasCustomModel() ->
+          objects.isEmpty() && currentAnalyzer == mlKitAnalyzer && mlKitAnalyzer.hashCode()!=0 ->
             showSnackbar("Default ML Kit classification model returned no results. " +
               "For better classification performance, see the README to configure a custom model.")
           objects.isEmpty() ->

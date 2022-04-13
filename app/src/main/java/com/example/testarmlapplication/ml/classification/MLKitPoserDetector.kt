@@ -2,14 +2,21 @@ package com.example.testarmlapplication.ml.classification
 
 import android.app.Activity
 import android.media.Image
+import com.example.testarmlapplication.GraphicOverlay
+import com.example.testarmlapplication.classi.PoseClassifierProcessor
 import com.example.testarmlapplication.ml.classification.utils.ImageUtils
+import com.example.testarmlapplication.pose.PoseGraphic
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions
 import kotlinx.coroutines.tasks.asDeferred
 
+class PoseWithClassification(val pose: Pose, val classificationResult: List<String>)
+
+
 class MLKitPoserDetector(context: Activity) : PoseDetector(context) {
+    private var poseClassifierProcessor: PoseClassifierProcessor? = null
 
 
 
@@ -19,7 +26,7 @@ class MLKitPoserDetector(context: Activity) : PoseDetector(context) {
     val detector = PoseDetection.getClient(options)
 
 
-    override suspend fun analyze(image: Image, imageRotation: Int): List<PoseDetectorObjectResult> {
+    override suspend fun analyze(image: Image, imageRotation: Int, fraphicOverlay: GraphicOverlay): List<PoseDetectorObjectResult> {
         // `image` is in YUV (https://developers.google.com/ar/reference/java/com/google/ar/core/Frame#acquireCameraImage()),
         val convertYuv = convertYuv(image)
 
@@ -33,6 +40,26 @@ class MLKitPoserDetector(context: Activity) : PoseDetector(context) {
 //            val bestLabel = obj.labels.maxByOrNull { label -> label.confidence } ?: return@mapNotNull null
 //            val coords = obj.boundingBox.exactCenterX().toInt() to obj.boundingBox.exactCenterY().toInt()
 //            val rotatedCoordinates = coords.rotateCoordinates(rotatedImage.width, rotatedImage.height, imageRotation)
+            var classificationResult: List<String> = ArrayList()
+//                if (poseClassifierProcessor == null) {
+//                    poseClassifierProcessor = PoseClassifierProcessor(context, false)
+//
+//                classificationResult = poseClassifierProcessor!!.getPoseResult(mlKitPoseDetectedObjects)
+//            }
+           val poseWithClassification=   PoseWithClassification(mlKitPoseDetectedObjects, classificationResult)
+
+
+            fraphicOverlay.add(
+                PoseGraphic(
+                    fraphicOverlay,
+                    poseWithClassification.pose,
+                    true,
+                    true,
+                    true,
+                    poseWithClassification.classificationResult
+                )
+            )
+
             PoseDetectorObjectResult(obj.inFrameLikelihood, obj.landmarkType.toString(), Pair(obj.position3D.x.toInt(),obj.position3D.y.toInt()))
         }
     }
