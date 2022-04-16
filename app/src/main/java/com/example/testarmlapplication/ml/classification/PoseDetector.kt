@@ -21,6 +21,7 @@ import android.graphics.Bitmap
 import android.media.Image
 import com.example.testarmlapplication.YuvToRgbConverter
 import com.google.ar.core.Frame
+import com.google.mlkit.vision.pose.Pose
 
 /**
  * Describes a common interface for [GoogleCloudVisionDetector] and [MLKitObjectDetector] that can
@@ -33,7 +34,7 @@ abstract class PoseDetector(val context: Context) {
    * Infers a list of [DetectedObjectResult] given a camera image frame, which contains a confidence level,
    * a label, and a pixel coordinate on the image which is believed to be the center of the object.
    */
-  abstract suspend fun analyze(image: Image, imageRotation: Int): List<PoseDetectorObjectResult>
+  abstract suspend fun analyze(image: Image, imageRotation: Int): Pose
 
   /**
    * [Frame.acquireCameraImage] returns an image in YUV format.

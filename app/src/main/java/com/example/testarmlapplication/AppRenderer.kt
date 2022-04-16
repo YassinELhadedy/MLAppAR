@@ -22,9 +22,7 @@ import androidx.lifecycle.LifecycleOwner
 import com.example.testarmlapplication.common.helpers.DisplayRotationHelper
 import com.example.testarmlapplication.common.samplerender.SampleRender
 import com.example.testarmlapplication.common.samplerender.arcore.BackgroundRenderer
-import com.example.testarmlapplication.ml.classification.DetectedObjectResult
-import com.example.testarmlapplication.ml.classification.MLKitObjectDetector
-import com.example.testarmlapplication.ml.classification.ObjectDetector
+import com.example.testarmlapplication.ml.classification.MLKitPoserDetector
 import com.example.testarmlapplication.ml.classification.render.LabelRender
 import com.example.testarmlapplication.ml.classification.render.PointCloudRender
 import com.google.ar.core.Anchor
@@ -33,11 +31,12 @@ import com.google.ar.core.Frame
 import com.google.ar.core.TrackingState
 import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
-import java.util.Collections
+import com.google.mlkit.vision.pose.Pose
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
+import java.util.*
 
 /**
  * Renders the HelloAR application into using our example Renderer.
@@ -61,9 +60,9 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
   val arLabeledAnchors = Collections.synchronizedList(mutableListOf<ARLabeledAnchor>())
   var scanButtonWasPressed = false
 
-  val mlKitAnalyzer = MLKitObjectDetector(activity)
+  val mlKitAnalyzer = MLKitPoserDetector(activity)
 
-  var currentAnalyzer: ObjectDetector = mlKitAnalyzer
+  var currentAnalyzer: MLKitPoserDetector = mlKitAnalyzer
 
   override fun onResume(owner: LifecycleOwner) {
     displayRotationHelper.onResume()
@@ -112,7 +111,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     displayRotationHelper.onSurfaceChanged(width, height)
   }
 
-  var objectResults: List<DetectedObjectResult>? = null
+  var objectResults: Pose? = null
 
   override fun onDrawFrame(render: SampleRender) {
     val session = activity.arCoreSessionHelper.sessionCache ?: return
@@ -170,26 +169,27 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     if (objects != null) {
       objectResults = null
       Log.i(TAG, "$currentAnalyzer got objects: $objects")
-      val anchors = objects.mapNotNull { obj ->
-        val (atX, atY) = obj.centerCoordinate
-        val anchor = createAnchor(atX.toFloat(), atY.toFloat(), frame) ?: return@mapNotNull null
-        Log.i(TAG, "Created anchor ${anchor.pose} from hit test")
-        ARLabeledAnchor(anchor, obj.label)
+
+      val anchors = objects.allPoseLandmarks.mapNotNull { landMark ->
+        val (atX, atY) = landMark.position.x to landMark.position.y
+        val anchor = createAnchor(atX.toFloat(), atY.toFloat(), frame)  ?: return@mapNotNull null
+        Log.i(TAG, "Created anchor ${anchor?.pose} from hit test")
+        ARLabeledAnchor(anchor, landMark.landmarkType.toString())
       }
       arLabeledAnchors.addAll(anchors)
       view.post {
         view.resetButton.isEnabled = arLabeledAnchors.isNotEmpty()
         view.setScanningActive(false)
-        when {
-          objects.isEmpty() && currentAnalyzer == mlKitAnalyzer && !mlKitAnalyzer.hasCustomModel() ->
-            showSnackbar("Default ML Kit classification model returned no results. " +
-              "For better classification performance, see the README to configure a custom model.")
-          objects.isEmpty() ->
-            showSnackbar("Classification model returned no results.")
-          anchors.size != objects.size ->
-            showSnackbar("Objects were classified, but could not be attached to an anchor. " +
-              "Try moving your device around to obtain a better understanding of the environment.")
-        }
+//        when {
+//          objects.isEmpty() && currentAnalyzer == mlKitAnalyzer && !mlKitAnalyzer.hasCustomModel() ->
+//            showSnackbar("Default ML Kit classification model returned no results. " +
+//              "For better classification performance, see the README to configure a custom model.")
+//          objects.isEmpty() ->
+//            showSnackbar("Classification model returned no results.")
+//          anchors.size != objects.size ->
+//            showSnackbar("Objects were classified, but could not be attached to an anchor. " +
+//              "Try moving your device around to obtain a better understanding of the environment.")
+//        }
       }
     }
 
