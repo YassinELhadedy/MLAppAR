@@ -16,6 +16,8 @@
 
 package com.example.testarmlapplication.ml.classification.render
 
+import android.os.Build
+import androidx.annotation.RequiresApi
 import com.example.testarmlapplication.common.samplerender.Mesh
 import com.example.testarmlapplication.common.samplerender.SampleRender
 import com.example.testarmlapplication.common.samplerender.Shader
@@ -101,6 +103,7 @@ class LabelRender {
   /**
    * Draws a label quad with text [label] at [pose]. The label will rotate to face [cameraPose] around the Y-axis.
    */
+  @RequiresApi(Build.VERSION_CODES.N)
   fun draw(
     render: SampleRender,
     viewProjectionMatrix: FloatArray,

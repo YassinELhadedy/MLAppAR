@@ -158,7 +158,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         launch(Dispatchers.IO) {
           val cameraId = session.cameraConfig.cameraId
           val imageRotation = displayRotationHelper.getCameraSensorToDisplayRotation(cameraId)
-          objectResults = currentAnalyzer.analyze(cameraImage, imageRotation)
+          objectResults = currentAnalyzer.analyze(cameraImage, 0)
           cameraImage.close()
         }
       }
@@ -172,8 +172,10 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
 
       val anchors = objects.allPoseLandmarks.mapNotNull { landMark ->
         val (atX, atY) = landMark.position.x to landMark.position.y
+        Log.i("#YASDEBUG", "Created Pose ${atX} , ${atY}from hit test")
         val anchor = createAnchor(atX.toFloat(), atY.toFloat(), frame)  ?: return@mapNotNull null
-        Log.i(TAG, "Created anchor ${anchor?.pose} from hit test")
+        Log.i("#YASDEBUG", "Created type ${landMark.landmarkType.toString()}from hit test")
+        Log.i("#YASDEBUG", "Created anchor ${anchor?.pose} from hit test")
         ARLabeledAnchor(anchor, landMark.landmarkType.toString())
       }
       arLabeledAnchors.addAll(anchors)
