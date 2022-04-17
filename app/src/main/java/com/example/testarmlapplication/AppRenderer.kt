@@ -58,7 +58,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
   val viewProjectionMatrix = FloatArray(16)
 
   val arLabeledAnchors = Collections.synchronizedList(mutableListOf<ARLabeledAnchor>())
-  var scanButtonWasPressed = false
+  var scanButtonWasPressed = true
 
   val mlKitAnalyzer = MLKitPoserDetector(activity)
 
@@ -93,7 +93,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
 
 
     view.resetButton.setOnClickListener {
-      arLabeledAnchors.clear()
+    //  arLabeledAnchors.clear()
       view.resetButton.isEnabled = false
       hideSnackbar()
     }
@@ -114,6 +114,8 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
   var objectResults: Pose? = null
 
   override fun onDrawFrame(render: SampleRender) {
+    arLabeledAnchors.clear()
+
     val session = activity.arCoreSessionHelper.sessionCache ?: return
     session.setCameraTextureNames(intArrayOf(backgroundRenderer.cameraColorTexture.textureId))
 
@@ -150,8 +152,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
 
     // Frame.acquireCameraImage must be used on the GL thread.
     // Check if the button was pressed last frame to start processing the camera image.
-    if (scanButtonWasPressed) {
-      scanButtonWasPressed = false
+
       val cameraImage = frame.tryAcquireCameraImage()
       if (cameraImage != null) {
         // Call our ML model on an IO thread.
@@ -161,7 +162,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
           objectResults = currentAnalyzer.analyze(cameraImage, 0)
           cameraImage.close()
         }
-      }
+
     }
 
     /** If results were completed this frame, create [Anchor]s from model results. */

@@ -7,14 +7,15 @@ import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
 import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions
+import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
 import kotlinx.coroutines.tasks.asDeferred
 
 class MLKitPoserDetector(context: Activity) : PoseDetector(context) {
 
 
 
-    val options = AccuratePoseDetectorOptions.Builder()
-        .setDetectorMode(AccuratePoseDetectorOptions.SINGLE_IMAGE_MODE)
+    val options = PoseDetectorOptions.Builder()
+        .setDetectorMode(PoseDetectorOptions.STREAM_MODE)
         .build()
     val detector = PoseDetection.getClient(options)
 
