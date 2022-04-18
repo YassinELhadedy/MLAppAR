@@ -153,7 +153,9 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     // Frame.acquireCameraImage must be used on the GL thread.
     // Check if the button was pressed last frame to start processing the camera image.
 
-      val cameraImage = frame.tryAcquireCameraImage()
+
+    val cameraImage = try { frame.tryAcquireCameraImage() } catch (e: Exception) { return }
+
       if (cameraImage != null) {
         // Call our ML model on an IO thread.
         launch(Dispatchers.IO) {
@@ -162,7 +164,6 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
           objectResults = currentAnalyzer.analyze(cameraImage, 0)
           cameraImage.close()
         }
-
     }
 
     /** If results were completed this frame, create [Anchor]s from model results. */
@@ -216,8 +217,11 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
   fun Frame.tryAcquireCameraImage() = try {
     acquireCameraImage()
   } catch (e: NotYetAvailableException) {
+    Log.i("ygdsadsagdsa",e.message ?:" sdss")
+
     null
   } catch (e: Throwable) {
+    Log.i("ygdsadsagdsa",e.message ?:" sd")
     throw e
   }
 
