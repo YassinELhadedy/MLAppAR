@@ -19,12 +19,14 @@ import android.opengl.Matrix
 import android.util.Log
 import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.lifecycleScope
 import com.example.testarmlapplication.common.helpers.DisplayRotationHelper
 import com.example.testarmlapplication.common.samplerender.SampleRender
 import com.example.testarmlapplication.common.samplerender.arcore.BackgroundRenderer
 import com.example.testarmlapplication.ml.classification.MLKitPoserDetector
 import com.example.testarmlapplication.ml.classification.render.LabelRender
 import com.example.testarmlapplication.ml.classification.render.PointCloudRender
+import com.google.android.filament.utils.HDRLoader
 import com.google.ar.core.Anchor
 import com.google.ar.core.Coordinates2d
 import com.google.ar.core.Frame
@@ -32,10 +34,12 @@ import com.google.ar.core.TrackingState
 import com.google.ar.core.exceptions.CameraNotAvailableException
 import com.google.ar.core.exceptions.NotYetAvailableException
 import com.google.mlkit.vision.pose.Pose
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.MainScope
-import kotlinx.coroutines.launch
+import io.github.sceneview.SceneView
+import io.github.sceneview.environment.loadEnvironment
+import io.github.sceneview.math.Position
+import io.github.sceneview.math.Rotation
+import io.github.sceneview.node.ModelNode
+import kotlinx.coroutines.*
 import java.util.*
 
 /**
@@ -97,6 +101,8 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
       view.resetButton.isEnabled = false
       hideSnackbar()
     }
+    initSceneView()
+
   }
 
   override fun onSurfaceCreated(render: SampleRender) {
@@ -209,6 +215,32 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
         arDetectedObject.label
       )
     }
+
+    view.activity.lifecycleScope.launchWhenCreated {
+      view.sceneView.environment = HDRLoader.loadEnvironment(
+        context = view.activity,
+        hdrFileLocation = "environments/studio_small_09_2k.hdr",
+        specularFilter = false,
+        lifecycle = view.activity.lifecycle
+      )
+
+      modelNode.loadModel(
+        context = view.activity,
+        glbFileLocation = "https://sceneview.github.io/assets/models/MaterialSuite.glb",
+        autoAnimate = true,
+        autoScale = true,
+        centerOrigin = Position(x = 0.0f, y = 0.0f, z = 0.0f),
+        lifecycle = view.activity.lifecycle
+      )
+      // We currently have an issue while the model render is not completely loaded
+      delay(200)
+      view.sceneView.camera.smooth(
+        position = Position(x = -1.0f, y = 1.5f, z = -3.5f),
+        rotation = Rotation(x = -60.0f, y = -50.0f),
+        speed = 0.5f
+      )
+    }
+
   }
 
   /**
@@ -253,6 +285,18 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
     val result = hits.getOrNull(0) ?: return null
     return result.trackable.createAnchor(result.hitPose)
   }
+
+  lateinit var modelNode:ModelNode
+
+  private fun initSceneView() {
+    view.sceneView.camera.position = Position(x = 4.0f, y = -1.0f)
+    view.sceneView.camera.rotation = Rotation(x = 0.0f, y = 80.0f)
+
+    modelNode = ModelNode()
+    view.sceneView.addChild(modelNode)
+  }
 }
+
+
 
 data class ARLabeledAnchor(val anchor: Anchor, val label: String)

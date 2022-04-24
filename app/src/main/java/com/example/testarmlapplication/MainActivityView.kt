@@ -24,6 +24,7 @@ import androidx.lifecycle.DefaultLifecycleObserver
 import androidx.lifecycle.LifecycleOwner
 import com.example.testarmlapplication.common.helpers.SnackbarHelper
 import com.example.testarmlapplication.common.samplerender.SampleRender
+import io.github.sceneview.SceneView
 
 
 /**
@@ -34,6 +35,8 @@ class MainActivityView(val activity: MainActivity, renderer: AppRenderer) : Defa
   val surfaceView = root.findViewById<GLSurfaceView>(R.id.surfaceview).apply {
     SampleRender(this, renderer, activity.assets)
   }
+  val sceneView = root.findViewById<SceneView>(R.id.sceneView)
+
   val useCloudMlSwitch = root.findViewById<SwitchCompat>(R.id.useCloudMlSwitch)
   val scanButton = root.findViewById<AppCompatButton>(R.id.scanButton)
   val resetButton = root.findViewById<AppCompatButton>(R.id.clearButton)

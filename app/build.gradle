@@ -8,7 +8,7 @@ android {
 
     defaultConfig {
         applicationId "com.example.testarmlapplication"
-        minSdk 21
+        minSdk 24
         targetSdk 31
         versionCode 1
         versionName "1.0"
@@ -50,6 +50,10 @@ dependencies {
     // MLKit
     implementation 'com.google.mlkit:object-detection:17.0.0'
     implementation 'com.google.mlkit:object-detection-custom:17.0.0'
+
+    // 3D only
+    implementation 'io.github.sceneview:sceneview:0.5.1'
+
 
     // ARCore (Google Play Services for AR) library.
     implementation 'com.google.ar:core:1.30.0'
