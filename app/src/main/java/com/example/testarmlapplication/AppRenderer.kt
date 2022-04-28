@@ -175,7 +175,7 @@ class AppRenderer(val activity: MainActivity) : DefaultLifecycleObserver, Sample
       val anchors = objects.allPoseLandmarks.mapNotNull { landMark ->
         val (atX, atY) = landMark.position.x to landMark.position.y
         Log.i("#YASDEBUG", "Created Pose ${atX} , ${atY}from hit test")
-        val anchor = createAnchor(atX.toFloat(), atY.toFloat(), frame)  ?: return@mapNotNull null
+        val anchor = createAnchor(atX, atY, frame)  ?: return@mapNotNull null
         Log.i("#YASDEBUG", "Created type ${landMark.landmarkType.toString()}from hit test")
         Log.i("#YASDEBUG", "Created anchor ${anchor?.pose} from hit test")
         ARLabeledAnchor(anchor, landMark.landmarkType.toString())
