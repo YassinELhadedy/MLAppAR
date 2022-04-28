@@ -6,7 +6,6 @@ import com.example.testarmlapplication.ml.classification.utils.ImageUtils
 import com.google.mlkit.vision.common.InputImage
 import com.google.mlkit.vision.pose.Pose
 import com.google.mlkit.vision.pose.PoseDetection
-import com.google.mlkit.vision.pose.accurate.AccuratePoseDetectorOptions
 import com.google.mlkit.vision.pose.defaults.PoseDetectorOptions
 import kotlinx.coroutines.tasks.asDeferred
 
